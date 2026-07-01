@@ -6,7 +6,7 @@ export default function Overview() {
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [savings, setSavings] = useState<Savings[]>([]);
-
+  console.log({ budgetItems, expenses, savings });
   useEffect(() => {
     fetch("/api/budget")
       .then((res) => res.json())

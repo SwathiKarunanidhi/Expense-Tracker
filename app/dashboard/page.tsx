@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { BudgetItem, ExpenseItem, Savings } from "../../lib/types";
-export default function DashboardPage() {
+export default function dashboardPage() {
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [savings, setSavings] = useState<Savings[]>([]);

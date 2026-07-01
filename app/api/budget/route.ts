@@ -1,37 +1,31 @@
-import fs from "fs";
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import path from "path";
-import { BudgetItem } from "../../../lib/types";
 
-const filePath = path.join(process.cwd(), "data", "budget.json");
-
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+);
+console.log({ supabase });
 export async function GET() {
-  const data = fs.readFileSync(filePath, "utf-8");
-  return NextResponse.json(JSON.parse(data));
+  const { data, error } = await supabase.from("Budget").select("*");
+
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
 }
 
 export async function POST(req: Request) {
-  const newItem = await req.json();
-  const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-  data.push(newItem);
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-  return NextResponse.json(newItem, { status: 201 });
-}
-
-export async function PUT(req: Request) {
-  const updatedItem = await req.json();
-  let data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-  data = data.map((item: BudgetItem) =>
-    item.id === updatedItem.id ? updatedItem : item,
-  );
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-  return NextResponse.json(updatedItem, { status: 200 });
+  const body = await req.json();
+  const { data, error } = await supabase.from("Budget").insert([body]);
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (data) return NextResponse.json({ expense: data[0] });
 }
 
 export async function DELETE(req: Request) {
   const { id } = await req.json();
-  let data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-  data = data.filter((item: BudgetItem) => item.id !== Number(id));
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-  return NextResponse.json({}, { status: 200 });
+  const { error } = await supabase.from("Budget").delete().eq("id", id);
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
 }
